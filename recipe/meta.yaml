@@ -1,46 +1,56 @@
 {% set name = "opentelemetry-instrumentation-urllib3" %}
-{% set version = "0.36b0" %}
+{% set version = "0.58b0" %}
 
 package:
   name: {{ name|lower }}
   version: {{ version }}
 
 source:
-  url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/opentelemetry_instrumentation_urllib3-{{ version }}.tar.gz
-  sha256: 76c454937ed31c77fc6bfc5b9176c0e909e765fb17002c95f0f34ff84f0cddca
+  url: https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/{{ name.replace('-', '_')}}-{{ version }}.tar.gz
+  sha256: 978b8e3daa076437b1f7ed7509d8156108aee0679556fd355e532c4065dd7635
 
 build:
-  noarch: python
-  script: {{ PYTHON }} -m pip install . -vv
   number: 0
+  script: {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
+  skip: true  # [py<39]
 
 requirements:
   host:
-    - python >=3.7
+    - python
     - pip
     - hatchling
   run:
-    - python >=3.7
-    - opentelemetry-api >=1.12,<2.dev0
-    - opentelemetry-instrumentation ==0.36b0
-    - opentelemetry-semantic-conventions ==0.36b0
-    - opentelemetry-util-http ==0.36b0
-    - wrapt <2.0.0,>=1.0.0
+    - python
+    - opentelemetry-api >=1.12,<2
+    - opentelemetry-instrumentation =={{ version }}
+    - opentelemetry-semantic-conventions =={{ version }}
+    - opentelemetry-util-http =={{ version }}
+    - wrapt >=1.0.0,<2.0.0
+  run_constrained:
+    - urllib3 >=1.0.0,<3.0.0
 
+# Tests disabled:
+# E   ModuleNotFoundError: No module named 'opentelemetry.test'
+# https://pypi.org/project/opentelemetry-test-utils, not in the main channel.
 test:
   imports:
     - opentelemetry
-    - opentelemetry.instrumentation
+    - opentelemetry.instrumentation.urllib3
   commands:
     - pip check
   requires:
     - pip
+    - urllib3 >=1.0.0,<3.0.0
 
 about:
   home: https://github.com/open-telemetry/opentelemetry-python-contrib/tree/main/instrumentation/opentelemetry-instrumentation-urllib3
   summary: OpenTelemetry urllib3 instrumentation
   license: Apache-2.0
+  license_family: Apache
   license_file: LICENSE
+  description: This library allows tracing HTTP requests made by the urllib3 library.
+  dev_url: https://github.com/open-telemetry/opentelemetry-python-contrib/tree/main/instrumentation/opentelemetry-instrumentation-urllib3
+  doc_url: https://github.com/open-telemetry/opentelemetry-python-contrib/blob/main/instrumentation/opentelemetry-instrumentation-urllib3/README.rst
 
 extra:
   recipe-maintainers:
